@@ -1,0 +1,149 @@
+Dim Times As Integer
+Times = 0
+
+    For Action = 1 To WS_Count
+
+        Dim Ticker_N As String
+
+        Dim Summary_Table_Row As Integer
+        Summary_Table_Row = 2
+
+        Dim Ticker_Total_Open As Double
+        Ticker_Total_Open = 0
+
+        Dim Ticker_Total_Close As Double
+        Ticker_Total_Close = 0
+
+        Dim Yearly_Change As Double
+        Yearly_Change = 0
+              
+        Dim Total_Stock_Volume As Double
+        Total_Stock_Volume = 0
+              
+        LastRow = Cells(Rows.Count, 1).End(xlUp).Row
+        Cells(1, 9).Value = "Ticker"
+        Cells(1, 10).Value = "Yearly Change"
+        Cells(1, 11).Value = "Percent Change"
+        Cells(1, 12).Value = "Total Stock Volume"
+
+            '_______________________________________________________________
+            For i = 2 To LastRow
+
+                
+                    If Cells(i + 1, 1).Value <> Cells(i, 1).Value Then
+                        Ticker_N = Cells(i, 1).Value
+                        Ticker_Total_Open = Ticker_Total_Open + Cells(i, 3).Value
+                        Ticker_Total_Close = Ticker_Total_Close + Cells(i, 6).Value
+                        Total_Stock_Volume = Total_Stock_Volume + Cells(i, 7).Value
+
+                        Dim Difference As Double
+                        Difference = Ticker_Total_Close - Ticker_Total_Open
+
+                        Range("I" & Summary_Table_Row).Value = Ticker_N
+
+                        Range("J" & Summary_Table_Row).Value = Difference
+
+                                If Range("J" & Summary_Table_Row) <= 0 Then
+                                    Range("J" & Summary_Table_Row).Interior.ColorIndex = 3
+                                Else
+                                    Range("J" & Summary_Table_Row).Interior.ColorIndex = 4
+                                End If
+
+                        Dim Percent_Change As Long
+
+                                If Ticker_Total_Open = 0 Then
+                                    Percent_Change = 0
+                                Else
+                                    Percent_Change = CLng(CLng(Difference) / CLng(Ticker_Total_Open))
+                                End If
+
+
+                        Range("K" & Summary_Table_Row).Value = Percent_Change
+                        Range("K" & Summary_Table_Row).NumberFormat = "0.00%"
+                        Range("L" & Summary_Table_Row).Value = Total_Stock_Volume
+                        
+                        Summary_Table_Row = Summary_Table_Row + 1
+                        Ticker_Total_Open = 0
+                        Ticker_Total_Close = 0
+                        Difference = 0
+                        Total_Stock_Volume = 0
+
+                    Else
+                        Ticker_Total_Open = Ticker_Total_Open + Cells(i, 3).Value
+                        Ticker_Total_Close = Ticker_Total_Close + Cells(i, 6).Value
+                        Total_Stock_Volume = Total_Stock_Volume + Cells(i, 7).Value
+
+                    End If
+
+            Next i
+
+     
+            '_______________________________________________________________
+
+        Cells(2, 15).Value = "Greatest % Increase"
+        Cells(3, 15).Value = "Greatest % Decrease"
+        Cells(4, 15).Value = "Greatest Total Volume"
+        Cells(1, 16).Value = "Ticker"
+        Cells(1, 17).Value = "Value"
+
+        Dim Min As Double
+        Dim Max As Double
+        Dim rw As Integer
+
+        Min = 10000
+        Max = -10000
+        rw = 2
+
+            Do While Cells(rw, 11) <> ""
+                    If Min > Cells(rw, 11) Then
+                    Min = Cells(rw, 11)
+                    End If
+
+                    If Max < Cells(rw, 11) Then
+                    Max = Cells(rw, 11)
+                    End If
+
+                rw = rw + 1
+            Loop
+
+        Range("Q2").Value = Max
+        Range("Q2").NumberFormat = "0.00%"
+        
+        Range("Q3").Value = Min
+        Range("Q3").NumberFormat = "0.00%"
+
+        Dim MaxVolume As Double
+        Dim rww As Integer
+
+        MaxVolume = -10000
+        rww = 2
+
+            Do While Cells(rww, 12) <> ""
+                    If MaxVolume < Cells(rww, 12) Then
+                    MaxVolume = Cells(rww, 12)
+                    End If
+
+                rww = rww + 1
+            Loop
+
+    
+        Range("Q4").Value = MaxVolume
+        Range("P2") = "=index(I:I,match(Q2,K:K,0))"
+        Range("P3") = "=index(I:I,match(Q3,K:K,0))"
+        Range("P4") = "=index(I:I,match(Q4,L:L,0))"
+
+        Columns("A:Q").AutoFit
+
+        Times = Times + 1
+
+            If Times <> WS_Count Then
+                ActiveSheet.Next.Activate
+            Else
+                Exit For
+            End If
+
+    Next Action
+
+
+End Sub
+
